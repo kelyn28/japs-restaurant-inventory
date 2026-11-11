@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#17251e">
+  <title>{{title}}</title>
+  <link rel="stylesheet" href="/inventory.css">
+</head>
+<body data-admin="{{isAdmin}}" data-csrf="{{csrfToken}}">
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <a class="brand" href="/" aria-label="Japz Grill inventory home">
+        <img class="brand-logo" src="/images/japzgrill-logo.png" alt="JAPZGRILL Kitchen &amp; Bistro">
+        <span><strong>JAPZGRILL</strong><small>BURGER &amp; BISTRO</small></span>
+      </a>
+      <div class="nav-label">WORKSPACE</div>
+      <nav class="main-nav" aria-label="Main navigation">
+        <button class="nav-link active" data-page="dashboard"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>Overview</button>
+        <button class="nav-link" data-page="inventory"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H20v16H5.5A1.5 1.5 0 0 1 4 18.5z"/><path d="M4 17h16M8 8h8m-8 4h8"/></svg>Inventory</button>
+        <button class="nav-link" data-page="transactions"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h13l-3-3m3 3-3 3M17 17H4l3 3m-3-3 3-3"/></svg>Transactions</button>
+        <button class="nav-link" data-page="reports"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V5m0 14h16"/><path d="m7 15 4-4 3 2 5-6"/></svg>Reports</button>
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="sidebar-note"><span class="status-dot"></span><span><strong>Inventory is live</strong><small>Stock movements update instantly</small></span></div>
+        <form action="/logout" method="post">
+          <input type="hidden" name="_csrf" value="{{csrfToken}}">
+          <button class="logout-button" type="submit"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 17l5-5-5-5m5 5H3"/><path d="M12 3h7a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-7"/></svg>Sign out</button>
+        </form>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="topbar">
+        <button class="mobile-menu" id="menuToggle" aria-label="Toggle navigation">☰</button>
+        <label class="topbar-search"><span aria-hidden="true">⌕</span><input id="globalItemSearch" type="search" placeholder="Search inventory items..." aria-label="Search inventory items"></label>
+        <div class="account">
+          <div class="account-copy"><strong>{{user.name}}</strong><small>{{user.role}}</small></div>
+          <span class="avatar">{{user.name}}</span>
+        </div>
+      </header>
+
+      <div class="page-wrap">
+        <section class="page-view active" id="page-dashboard">
+          <div class="page-heading">
+            <div><p class="eyebrow" id="dashboardDate">JAPZ GRILL · KITCHEN OPERATIONS</p><h1>Welcome back, {{user.name}}!</h1><p class="muted">Here’s what’s happening with your inventory today.</p></div>
+            <button class="button button-primary admin-only" data-open-item><span>＋</span> Add inventory item</button>
+          </div>
+          <section class="service-banner">
+            <div class="service-copy">
+              <span class="service-kicker"><span class="service-live-dot"></span> KITCHEN INVENTORY · LIVE</span>
+              <h2>Fresh ingredients.<br><em>Ready for service.</em></h2>
+              <p>Keep an eye on today’s prep, replenish what’s running low, and make every plate count.</p>
+              <button class="service-link" data-page="inventory">Explore your pantry <span>→</span></button>
+            </div>
+          </section>
+          <div class="metric-grid dashboard-metrics">
+            <article class="metric-card"><div class="metric-top"><span class="metric-icon green">▤</span><span class="metric-label">ACTIVE INGREDIENTS</span></div><strong id="metricItems">—</strong><small>Items in your kitchen pantry</small></article>
+            <article class="metric-card"><div class="metric-top"><span class="metric-icon blue">◉</span><span class="metric-label">AVAILABLE STOCK</span></div><strong id="metricUnits">—</strong><small>Unexpired quantity ready to use</small></article>
+            <article class="metric-card"><div class="metric-top"><span class="metric-icon amber">⌁</span><span class="metric-label">RUNNING LOW</span></div><strong id="metricLow">—</strong><small>Worth adding to the next order</small></article>
+            <article class="metric-card"><div class="metric-top"><span class="metric-icon red">!</span><span class="metric-label">NEEDS RESTOCKING</span></div><strong id="metricOut">—</strong><small>Items currently out of stock</small></article>
+            <article class="metric-card"><div class="metric-top"><span class="metric-icon amber">◷</span><span class="metric-label">EXPIRING SOON</span></div><strong id="metricExpiring">—</strong><small>Batches expiring in 7 days</small></article>
+          </div>
+          <div class="chart-grid">
+            <section class="panel chart-panel">
+              <div class="panel-heading"><div><h2>Stock distribution</h2><p>Active ingredients by stock health</p></div><span class="chart-period">CURRENT</span></div>
+              <div class="stock-chart-layout">
+                <div class="stock-donut" id="stockDonut" role="img" aria-label="Stock distribution chart"><div class="donut-center"><strong id="stockDonutTotal">—</strong><span>items</span></div></div>
+                <div class="chart-legend" id="stockLegend" aria-label="Stock distribution details"></div>
+              </div>
+            </section>
+            <section class="panel chart-panel">
+              <div class="panel-heading"><div><h2>Items needing restock</h2><p>Current stock snapshot: out-of-stock items first, then items at or below minimum. This is not a usage or sales history.</p></div><span class="chart-period">RESTOCK</span></div>
+              <div class="movement-chart" id="movementChart" role="img" aria-label="Current items needing restock, ordered with out-of-stock items first"></div>
+            </section>
+            <section class="panel alert-panel">
+              <div class="panel-heading"><div><h2>Inventory alerts</h2><p>Items nearing or past expiration</p></div><span class="heading-icon">◷</span></div>
+              <div class="table-wrap">
+                <table><thead><tr><th>ITEM</th><th>QTY LEFT</th><th>EXPIRATION</th><th>STATUS</th></tr></thead><tbody id="alertsBody"></tbody></table>
+              </div>
+            </section>
+          </div>
+          <div class="content-grid dashboard-lower">
+            <section class="panel">
+              <div class="panel-heading"><div><h2>Recent transactions</h2><p>Latest inventory movements</p></div><button class="text-button" data-page="transactions">View all <span>→</span></button></div>
+              <div class="table-wrap"><table><thead><tr><th>DATE</th><th>TYPE</th><th>ITEM</th><th>QUANTITY</th></tr></thead><tbody id="recentTransactions"></tbody></table></div>
+            </section>
+            <section class="panel">
+              <div class="panel-heading"><div><h2>Low stock items</h2><p>Ingredients to add to your next order</p></div><button class="text-button" data-page="inventory">View all <span>→</span></button></div>
+              <div class="table-wrap"><table><thead><tr><th>ITEM</th><th>QUANTITY</th><th>STATUS</th></tr></thead><tbody id="lowStockBody"></tbody></table></div>
+            </section>
+            <section class="service-promo">
+              <span class="promo-kicker">JAPZGRILL · KITCHEN OPERATIONS</span>
+              <h2>Keep your stock<br>always ready.</h2>
+              <p>Efficient inventory. Smoother service.</p>
+            </section>
+          </div>
+          <div class="metric-grid secondary-metrics">
+            <article class="metric-card compact"><div><span class="metric-label">EXPIRED BATCHES ON HAND</span><strong id="metricExpired">—</strong></div><span class="metric-icon red">⌁</span></article>
+            <article class="metric-card compact"><div><span class="metric-label">INVENTORY VALUATION</span><strong id="metricValue">—</strong></div><span class="metric-icon green">₱</span></article>
+          </div>
+        </section>
+
+        <section class="page-view" id="page-inventory">
+          <div class="page-heading"><div><p class="eyebrow">JAPZGRILL · STOCK CONTROL</p><h1>Inventory Items</h1><p class="muted">Manage and monitor your ingredients and supplies.</p></div><button class="button button-primary admin-only" data-open-item><span>＋</span> Add inventory item</button></div>
+          <div class="metric-grid inventory-metrics">
+            <article class="metric-card"><div class="metric-top"><span class="metric-icon green">▤</span><span class="metric-label">TOTAL ITEMS</span></div><strong id="inventoryMetricItems">—</strong><small>Active inventory items</small></article>
+            <article class="metric-card"><div class="metric-top"><span class="metric-icon blue">◉</span><span class="metric-label">AVAILABLE STOCK</span></div><strong id="inventoryMetricUnits">—</strong><small>Ready to use</small></article>
+            <article class="metric-card"><div class="metric-top"><span class="metric-icon amber">⌁</span><span class="metric-label">LOW STOCK</span></div><strong id="inventoryMetricLow">—</strong><small>Needs replenishment</small></article>
+            <article class="metric-card"><div class="metric-top"><span class="metric-icon red">!</span><span class="metric-label">OUT OF STOCK</span></div><strong id="inventoryMetricOut">—</strong><small>Currently unavailable</small></article>
+          </div>
+          <section class="panel category-panel">
+            <div class="panel-heading"><div><h2>Categories</h2><p>Browse ingredients by category</p></div><button class="text-button" data-clear-category>View all <span>→</span></button></div>
+            <div class="category-grid" id="categoryCards"></div>
+          </section>
+          <div class="inventory-layout">
+            <section class="panel inventory-items-panel">
+              <div class="panel-heading inventory-title"><div><h2>Inventory Items</h2><p>Current ingredient and supply levels</p></div><span class="result-count" id="itemCount"></span></div>
+              <div class="toolbar inventory-toolbar"><label class="search-box"><span>⌕</span><input id="itemSearch" type="search" placeholder="Search items..."></label><select id="categoryFilter" aria-label="Filter by category"><option value="">All categories</option></select><select id="statusFilter" aria-label="Filter by stock status"><option value="">All stock levels</option><option value="low">Low stock</option><option value="out">Out of stock</option><option value="in_stock">In stock</option></select><select id="sortFilter" aria-label="Sort inventory"><option value="name">Name A–Z</option><option value="name-desc">Name Z–A</option><option value="quantity">Quantity low–high</option><option value="quantity-desc">Quantity high–low</option><option value="category">Category</option><option value="code">Item code</option></select></div>
+              <div class="table-wrap inventory-table"><table><thead><tr><th>ITEM CODE</th><th>ITEM NAME</th><th>CATEGORY</th><th>UNIT</th><th>AVAILABLE</th><th>MIN. STOCK</th><th>STATUS</th><th>ACTIONS</th></tr></thead><tbody id="itemsBody"></tbody></table></div>
+              <div class="table-footer"><span id="paginationLabel"></span><div><button class="page-button" id="prevPage">←</button><button class="page-button" id="nextPage">→</button></div></div>
+            </section>
+            <aside class="inventory-rail">
+              <section class="panel inventory-alerts-panel">
+                <div class="panel-heading"><div><h2>Stock Alerts</h2><p>Items that need attention</p></div><button class="text-button" data-filter-status="low">View all <span>→</span></button></div>
+                <div class="table-wrap"><table><thead><tr><th>ITEM</th><th>QTY</th><th>STATUS</th></tr></thead><tbody id="inventoryAlertsBody"></tbody></table></div>
+              </section>
+              <section class="service-promo inventory-promo">
+                <span class="promo-kicker">JAPZGRILL · KITCHEN OPERATIONS</span>
+                <h2>Keep your inventory<br>always ready.</h2>
+                <p>Track. Manage. Grow.</p>
+              </section>
+            </aside>
+          </div>
+        </section>
+
+        <section class="page-view" id="page-transactions">
+          <div class="page-heading"><div><p class="eyebrow">AUDIT TRAIL</p><h1>Transactions</h1><p class="muted">A complete, read-only record of inventory movement.</p></div></div>
+          <section class="panel"><div class="table-wrap"><table><thead><tr><th>RECORDED AT</th><th>DELIVERY DATE</th><th>ITEM</th><th>TYPE</th><th>QUANTITY</th><th>BALANCE AFTER</th><th>SUPPLIER</th></tr></thead><tbody id="transactionsBody"></tbody></table></div></section>
+        </section>
+
+        <section class="page-view" id="page-reports">
+          <div class="page-heading"><div><p class="eyebrow">INVENTORY INSIGHTS</p><h1>Reports</h1><p class="muted">Review, print, or export the current inventory report.</p><p class="muted">Opening stock estimates are preliminary; verify them against physical counts.</p></div><div class="report-actions"><button class="button button-secondary" id="printReport">Print report</button><button class="button button-primary" id="exportReport" title="Download the current stock report as a CSV file for Excel or Google Sheets">↓ Export CSV</button></div></div>
+          <section class="panel report-panel"><div class="table-wrap report-table-wrap"><table><caption class="report-caption" id="reportCaption"></caption><thead id="reportHead"></thead><tbody id="reportBody"></tbody></table></div><div class="table-footer"><span id="reportCount"></span></div></section>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <div class="modal-backdrop" id="itemModal" hidden>
+    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="itemModalTitle">
+      <div class="modal-heading"><div><p class="eyebrow">ITEM DETAILS</p><h2 id="itemModalTitle">Add inventory item</h2></div><button class="close-button" data-close-modal aria-label="Close dialog">×</button></div>
+      <form id="itemForm"><input type="hidden" name="id"><div class="form-grid">
+        <label>Item name<input name="name" maxlength="120" required placeholder="Enter item name"></label><label>Item code<input name="code" maxlength="40" required placeholder="Enter item code"></label>
+        <label>Category<select name="category" required></select></label><label>Unit of measurement<input name="unit" maxlength="30" required placeholder="Enter unit of measurement"></label>
+        <label>Minimum stock level<input name="minimumStock" type="number" min="0" step="0.001" required value="0"></label><label>Unit cost (₱)<input name="unitCost" type="number" min="0" step="0.01" value="0"></label>
+        <label class="full-width">Description<textarea name="description" rows="3" placeholder="Optional item details"></textarea></label>
+      </div><div class="form-error" id="itemError" role="alert"></div><div class="modal-actions"><button type="button" class="button button-secondary" data-close-modal>Cancel</button><button class="button button-primary" type="submit">Save item</button></div></form>
+    </section>
+  </div>
+
+  <div class="modal-backdrop" id="transactionModal" hidden>
+    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="transactionModalTitle">
+      <div class="modal-heading"><div><p class="eyebrow">STOCK MOVEMENT</p><h2 id="transactionModalTitle">Record transaction</h2><p class="muted" id="transactionItemName"></p></div><button class="close-button" data-close-modal aria-label="Close dialog">×</button></div>
+      <form id="transactionForm"><input type="hidden" name="itemId"><div class="form-grid">
+        <label>Movement type<select name="type" id="movementType"><option value="stock_in">Stock in</option><option value="usage">Usage</option><option value="waste">Waste</option><option value="damaged">Damaged</option><option value="expired">Expired stock</option></select></label>
+        <label>Quantity<input name="quantity" type="number" min="0.001" step="0.001" required></label>
+        <label class="stock-in-field">Unit cost (₱)<input name="unitCost" type="number" min="0" step="0.01"></label>
+        <label class="stock-in-field">Supplier name<input name="supplierName" maxlength="160" placeholder="Enter the actual supplier name" required></label>
+        <label class="stock-in-field">Supplier ID (optional)<input name="supplierId" maxlength="80" placeholder="Supplier reference ID"></label>
+        <label class="stock-in-field">Delivery date<input name="deliveryDate" type="date"></label>
+        <label class="stock-in-field">Expiration date<input name="expirationDate" type="date"></label>
+        <label class="full-width">Remarks<textarea name="remarks" rows="3" placeholder="Optional transaction details"></textarea></label>
+      </div><div class="form-error" id="transactionError" role="alert"></div><div class="modal-actions"><button type="button" class="button button-secondary" data-close-modal>Cancel</button><button class="button button-primary" id="transactionSubmitButton" type="submit">Confirm movement</button></div></form>
+    </section>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="/inventory.js" defer></script>
+</body>
+</html>

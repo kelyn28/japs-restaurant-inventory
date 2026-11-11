@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#17251e">
+  <title>{{title}}</title>
+  <link rel="stylesheet" href="/inventory.css">
+</head>
+<body class="login-page">
+  <main class="login-card">
+    <a class="brand login-brand" href="/login"><span class="brand-mark">J</span><span><strong>JAPZGRILL</strong><small>INVENTORY</small></span></a>
+    <p class="eyebrow">RESTAURANT OPERATIONS</p>
+    <h1>Create your account</h1>
+    <p class="muted">Register for access to Japz Grill inventory.</p>
+    {{#if error}}<div class="login-error" role="alert">{{error}}</div>{{/if}}
+    <form action="/register" method="post" class="login-form">
+      <input type="hidden" name="_csrf" value="{{csrfToken}}">
+      <label>Full name<input name="name" type="text" maxlength="255" autocomplete="name" required autofocus></label>
+      <label>Email address<input name="email" type="email" maxlength="255" autocomplete="email" required></label>
+      <label>Password<input name="password" type="password" minlength="12" maxlength="72" autocomplete="new-password" required><small class="field-help">At least 12 characters.</small></label>
+      <label>Confirm password<input name="confirmPassword" type="password" minlength="12" maxlength="72" autocomplete="new-password" required></label>
+      <button class="button button-primary" type="submit">Create account <span>→</span></button>
+    </form>
+    <p class="login-help">New accounts have view-only access. Contact an administrator if you need staff permissions.<br><a href="/login">Already have an account? Sign in</a></p>
+    <div class="login-footer">JAPZGRILL · INVENTORY MANAGEMENT</div>
+  </main>
+</body>
+</html>

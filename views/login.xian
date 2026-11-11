@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#17251e">
+  <title>{{title}}</title>
+  <link rel="stylesheet" href="/inventory.css">
+</head>
+<body class="login-page">
+  <main class="login-layout">
+    <section class="login-welcome">
+      <a class="brand login-brand" href="/"><img class="brand-logo" src="/images/japzgrill-logo.png" alt="JAPZGRILL Kitchen &amp; Bistro"><span><strong>JAPZGRILL</strong><small>BURGER &amp; BISTRO</small></span></a>
+      <div class="welcome-copy">
+        <p class="welcome-kicker"><span></span> GOOD FOOD STARTS HERE</p>
+        <h1>From our<br>kitchen to<br><em>your table.</em></h1>
+        <p>Thoughtful ingredients. A kitchen in rhythm.<br>Everything fresh, from prep to plate.</p>
+      </div>
+      <div class="welcome-plate" aria-hidden="true"><div class="welcome-plate-inner"><span>✿</span><i>⌁</i><b>✦</b></div></div>
+      <div class="welcome-footer"><span>FRESH EVERY DAY</span><span>·</span><span>MADE WITH CARE</span></div>
+    </section>
+    <section class="login-panel">
+      <div class="login-card">
+        <div class="login-heading">
+          <p class="eyebrow">RESTAURANT OPERATIONS</p>
+          <h2>Welcome back<span>.</span></h2>
+          <p class="muted">Sign in to manage your inventory and stock movements.</p>
+        </div>
+        {{#if registered}}<div class="login-success" role="status">Your account is ready. Sign in to continue.</div>{{/if}}
+        {{#if error}}<div class="login-error" role="alert">{{error}}</div>{{/if}}
+        <form action="/login" method="post" class="login-form">
+          <input type="hidden" name="_csrf" value="{{csrfToken}}">
+          <label>Email address<input name="email" type="email" placeholder="you@example.com" autocomplete="username" required></label>
+          <label>Password<input name="password" type="password" placeholder="Enter your password" autocomplete="current-password" required></label>
+          <button class="button button-primary" type="submit">Sign in <span>→</span></button>
+        </form>
+        <div class="login-divider"><span>NEW TO JAPZGRILL?</span></div>
+        <a class="register-link" href="/register">Create an account <span>↗</span></a>
+        <p class="login-help">New accounts have view-only access. Ask an administrator for staff access.</p>
+        <div class="login-footer">JAPZGRILL <span>·</span> INVENTORY MANAGEMENT</div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
